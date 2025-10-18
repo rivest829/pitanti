@@ -56,8 +56,7 @@ func (r *GameComp) AfterInit() {
 	})
 }
 
-// Entry is the entrypoint
-func (r *GameComp) Entry(ctx context.Context, msg []byte) (*pb.JoinResponse, error) {
+func (r *GameComp) Login(ctx context.Context, msg []byte) (*pb.JoinResponse, error) {
 	s := r.app.GetSessionFromCtx(ctx)
 	err := s.Bind(ctx, strconv.Itoa(int(s.ID())))
 	if err != nil {

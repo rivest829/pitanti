@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/topfreegames/pitaya/v3/pkg/session"
 	"log"
 	"os"
 	"pitanti/utils"
@@ -18,13 +19,6 @@ func main() {
 	cli := client.New(logrus.InfoLevel, 1*time.Second)
 	defer cli.Disconnect()
 
-	// 连接到服务器 (默认端口3100)
-	err := cli.ConnectTo("localhost:3100")
-	if err != nil {
-		log.Fatal("连接失败:", err)
-	}
-	fmt.Println("成功连接到服务器!")
-	go listenMsg(cli)
 	// 启动交互式命令行界面
 	runCLI(cli)
 }
@@ -43,6 +37,7 @@ func runCLI(cli *client.Client) {
 
 	fmt.Println("\n=== Pitaya 调试客户端 ===")
 	fmt.Println("可用命令:")
+	fmt.Println("  login             - 登录")
 	fmt.Println("  req             - 请求")
 	fmt.Println("  quit             - 退出客户端")
 	fmt.Println("========================\n")
@@ -60,15 +55,18 @@ func runCLI(cli *client.Client) {
 
 		parts := strings.Split(input, " ")
 		command := strings.ToLower(parts[0])
-		router := strings.ToLower(parts[1])
-		var data []byte
-		if len(parts) > 2 {
-			data = []byte(parts[2])
-		}
 		switch command {
 		case "req":
+			router := strings.ToLower(parts[1])
+			var data []byte
+			if len(parts) > 2 {
+				data = []byte(parts[2])
+			}
 			_, err := cli.SendRequest(router, []byte(data))
 			utils.Must(err)
+		case "login":
+			roleId := strings.ToLower(parts[1])
+			login(roleId, cli)
 		case "quit", "exit":
 			fmt.Println("退出客户端...")
 			return
@@ -76,4 +74,22 @@ func runCLI(cli *client.Client) {
 			fmt.Printf("未知命令: %s\n", command)
 		}
 	}
+}
+
+func login(roleId string, cli *client.Client) {
+	cli.SetClientHandshakeData(&session.HandshakeData{
+		User: map[string]interface{}{
+			"roleId": roleId,
+		},
+	})
+	// 连接到服务器 (默认端口3100)
+	err := cli.ConnectTo("localhost:3100")
+	if err != nil {
+		log.Fatal("连接失败:", err)
+	}
+	fmt.Println("成功连接到服务器!")
+	go listenMsg(cli)
+
+	_, err = cli.SendRequest("game.comp.login", []byte(fmt.Sprintf("{\"roleId\":\"%s\"}", roleId)))
+	utils.Must(err)
 }

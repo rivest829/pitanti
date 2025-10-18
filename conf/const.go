@@ -1,8 +1,20 @@
 package conf
 
-type Server string
+type ServerType string
 
 const (
-	ServerGame    = "game"
-	ServerGateway = "gateway"
+	ServerGame    ServerType = "game"
+	ServerGateway ServerType = "gateway"
+)
+
+const (
+	CtxServerId = "serverId"
+	CtxRoleId   = "roleId"
+)
+
+type Env string
+
+const (
+	EnvDev Env = "dev"
+	EnvPro Env = "pro"
 )

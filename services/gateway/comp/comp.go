@@ -65,7 +65,7 @@ func (c *Connector) NotifySessionData(ctx context.Context, data *session.Session
 
 // SendPushToUser sends a push to a user
 func (c *Connector) SendPushToUser(ctx context.Context, msg *pb.UserMessage) (*pb.Response, error) {
-	_, err := c.app.SendPushToUsers("onMessage", msg, []string{"2"}, conf.ServerGateway)
+	_, err := c.app.SendPushToUsers("onMessage", msg, []string{"2"}, string(conf.ServerGateway))
 	if err != nil {
 		return nil, err
 	}
