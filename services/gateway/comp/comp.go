@@ -11,11 +11,6 @@ import (
 	"github.com/topfreegames/pitaya/v3/pkg/component"
 )
 
-// ConnectorRemote is a remote that will receive rpc's
-type ConnectorRemote struct {
-	component.Base
-}
-
 // Connector struct
 type Connector struct {
 	component.Base
@@ -72,13 +67,5 @@ func (c *Connector) SendPushToUser(ctx context.Context, msg *pb.UserMessage) (*p
 	return &pb.Response{
 		Code: 200,
 		Msg:  "boa",
-	}, nil
-}
-
-// RemoteFunc is a function that will be called remotely
-func (c *ConnectorRemote) RemoteFunc(ctx context.Context, msg *pb.RPCMsg) (*pb.RPCRes, error) {
-	fmt.Printf("received a remote call with this message: %s\n", msg)
-	return &pb.RPCRes{
-		Msg: fmt.Sprintf("received msg: %s", msg.GetMsg()),
 	}, nil
 }

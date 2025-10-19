@@ -6,50 +6,17 @@ import (
 	pitaya "github.com/topfreegames/pitaya/v3/pkg"
 	"github.com/topfreegames/pitaya/v3/pkg/acceptor"
 	"github.com/topfreegames/pitaya/v3/pkg/cluster"
-	"github.com/topfreegames/pitaya/v3/pkg/component"
 	"github.com/topfreegames/pitaya/v3/pkg/config"
 	"github.com/topfreegames/pitaya/v3/pkg/constants"
 	"github.com/topfreegames/pitaya/v3/pkg/groups"
 	"github.com/topfreegames/pitaya/v3/pkg/modules"
-	router2 "pitanti/common/router"
 	"pitanti/conf"
-	"pitanti/services/gateway/comp"
 	"pitanti/utils"
 	"strconv"
-	"strings"
 )
 
-func Start(env conf.Env, frontendPort int, svType string, rpcServerPort int) {
-	appEntity := create(env, svType, rpcServerPort, frontendPort, 0)
-	defer appEntity.Shutdown()
-	if isFrontend(frontendPort) {
-		configureFrontend(appEntity)
-	}
-	appEntity.Register(comp.NewConnector(appEntity),
-		component.WithName("comp"),
-		component.WithNameFunc(strings.ToLower),
-	)
-	appEntity.RegisterRemote(&comp.ConnectorRemote{},
-		component.WithName("rpc"),
-		component.WithNameFunc(strings.ToLower),
-	)
-	appEntity.Start()
-}
-
-func configureFrontend(appEntity pitaya.Pitaya) {
-	router := router2.NewGameRouter(appEntity)
-	err := appEntity.AddRoute(string(conf.ServerGame), router.Router)
-	utils.Must(err)
-	if err != nil {
-		fmt.Printf("error adding route %s\n", err.Error())
-	}
-}
-
-func isFrontend(frontendPort int) bool {
-	return frontendPort > 0
-}
-
-func create(env conf.Env, svType string, rpcServerPort, frontendPort, serverId int) (app pitaya.Pitaya) {
+// 创建并初始化一个Pitaya应用实例。
+func Create(env conf.Env, svType string, rpcServerPort, frontendPort, serverId int) (app pitaya.Pitaya) {
 	if env == conf.EnvDev {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
@@ -69,6 +36,7 @@ func create(env conf.Env, svType string, rpcServerPort, frontendPort, serverId i
 	return
 }
 
+// 初始化Pitaya构建器，并创建完整的Pitaya应用实例。
 func initPitaya(port int, isFrontend bool, svType string, meta map[string]string, rpcServerPort int) (pitaya.Pitaya, *modules.ETCDBindingStorage) {
 	builder := pitaya.NewDefaultBuilder(isFrontend, svType, pitaya.Cluster, meta, *config.NewDefaultPitayaConfig())
 
@@ -101,4 +69,9 @@ func initPitaya(port int, isFrontend bool, svType string, meta map[string]string
 	}
 
 	return builder.Build(), bs
+}
+
+// 判断当前是否为前端节点。
+func isFrontend(frontendPort int) bool {
+	return frontendPort > 0
 }

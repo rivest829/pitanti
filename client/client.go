@@ -38,8 +38,9 @@ func runCLI(cli *client.Client) {
 	fmt.Println("\n=== Pitaya 调试客户端 ===")
 	fmt.Println("可用命令:")
 	fmt.Println("  login             - 登录")
+	fmt.Println("  loginbyserverid       - 随机生成账户登录")
 	fmt.Println("  req             - 请求")
-	fmt.Println("  quit             - 退出客户端")
+	fmt.Println("  exit             - 退出客户端")
 	fmt.Println("========================\n")
 
 	for {
@@ -66,6 +67,10 @@ func runCLI(cli *client.Client) {
 			utils.Must(err)
 		case "login":
 			roleId := strings.ToLower(parts[1])
+			login(roleId, cli)
+		case "loginbyserverid":
+			serverId := utils.MustStrToInt(parts[1])
+			roleId := utils.GenRoleId(uint32(serverId))
 			login(roleId, cli)
 		case "quit", "exit":
 			fmt.Println("退出客户端...")
